@@ -13,7 +13,7 @@ IPKernel=np.ones((5,5))
 
 def imageProcessing(img):
     #while we will need a colour image later on, for now we convert to greyscale to reduce extrenious data when identifying the card itself
-    imgGrey = cv2.cvtColor(img,cv2,cv2.COLOR_BGR2GRAY)
+    imgGrey = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     #To further reduce noise, we use gaussian blur to reduce hard edges, we use a 5 by 5 kernel
     imgBlur = cv2.GaussianBlur(imgGrey, (5,5),1)
     #Next we pick out the edges using Canny Edge detector 
@@ -98,6 +98,6 @@ while True:
     #here will go code to take still image
 
     #Quit feed, will remove in final result
-    if cv2.waitKey(1) & OxFF==ord('q'):
-        break
+    # if cv2.waitKey(1) & OxFF==ord('q'):
+    #     break
 
