@@ -1,15 +1,8 @@
 import cv2
 import numpy as np
 import os
-# Set Camera Parameters
-#Code adapted in part from computervision.zone's 3 Hour Computer Vision workshop  https://www.computervision.zone/courses/learn-opencv-in-3-hours/
-widthImg =780
-heightImg =1280
-capture= cv2.VideoCapture(1)
-capture.set(3,widthImg)
-capture.set(4, heightImg)
-capture.set(10,130)
-IPKernel=np.ones((5,5))
+
+IPKernel = np.ones((5,5))
 
 
 def imageProcessing(img):
@@ -78,23 +71,3 @@ def getWarp(img,largest):
     #resize image to same size once more
     imgCrop= cv2.resize(imgCrop,(widthImg,heightImg))
     return imgCrop
-
-
-
-
-while True:
-    success, img= capture.read()
-    imgCont= img.copy()
-    #resize before image preprocessing
-    img= cv2.resize(img,(widthImg, heightImg))
-    #apply filters
-    imgContour= img.copy()
-    imgThresh=imageProcessing(img)
-    #find the largest 4 sided "object" in the camera field of view and draw a bounding box around it
-    largest = getContours(imgThresh)
-    #Correct for warped/skewed perception
-    getWarp(img,largest)
-
-    cv2.imshow("Result",imgThresh)
-    
-
