@@ -14,7 +14,7 @@ def imageProcessing(img):
     imgCanny = cv2.Canny(imgBlur,200,200)
     #We thicken the edges using the dilation function, we do not need to trace fine detailed shapes. We want to find the rectangular bounds of the card
     #We make 2 passes of dilation to create very thick lines, then cut them back with one pass of erosion. This method was reccomended by Murtaza's Workshop
-    imgDial=cv2.dialate(imgCanny,IPKernel,iterations=2)
+    imgDial=cv2.dilate(imgCanny,IPKernel,iterations=2)
     imgErode= cv2.erode(imgDial,IPKernel, iterations=1)
     return imgErode
 
