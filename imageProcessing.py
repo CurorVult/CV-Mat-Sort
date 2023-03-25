@@ -8,6 +8,9 @@ IPKernel = np.ones((5,5))
 def imageProcessing(img):
     #while we will need a colour image later on, for now we convert to greyscale to reduce extrenious data when identifying the card itself
     imgGrey = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    # Increase contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    imgGrey = clahe.apply(imgGrey)
     #To further reduce noise, we use gaussian blur to reduce hard edges, we use a 5 by 5 kernel
     imgBlur = cv2.GaussianBlur(imgGrey, (5,5),1)
     #Next we pick out the edges using Canny Edge detector 
@@ -58,7 +61,10 @@ def reorder(points):
 
 
 
-def getWarp(img,largest):
+def getWarp(img, largest, widthImg, heightImg):
+
+    if largest.size == 0:
+        return img
 #define two sets of points 
     reorder(largest)
     pts1=np.float32(largest)
