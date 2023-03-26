@@ -4,10 +4,6 @@ import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Flatten, Input
 from tensorflow.keras.models import Model
 
-# Load images
-path_to_directory = "/content/drive/MyDrive/Datasets/One_images"
-image_paths = [os.path.join(path_to_directory, file) for file in os.listdir(path_to_directory) if file.endswith(('.png', '.jpg', '.jpeg'))]
-
 # Create the embedding function
 def create_embedding_function(input_shape):
     input = Input(shape=input_shape)
@@ -28,3 +24,6 @@ def load_preprocess_image(image_path):
     img = img / 255.0
     return img.numpy()
 
+# Load images
+path_to_directory = "/content/drive/MyDrive/Datasets/One_images"
+image_paths = [os.path.join(path_to_directory, file) for file in os.listdir(path_to_directory) if file.endswith(('.png', '.jpg', '.jpeg'))]
