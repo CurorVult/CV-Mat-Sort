@@ -135,8 +135,7 @@ def akaze_comparison(img_query, folder_path):
 
     # Initialize BFMatcher
     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    # The rest of the function is the same as the sift_comparison function
-    # ...
+
     best_match = None
     best_match_score = float('inf')
 
@@ -150,10 +149,13 @@ def akaze_comparison(img_query, folder_path):
 
             # Match keypoints
             matches = bf.match(des_query, des_train)
-            matches.sort(key=lambda x: x.distance)
+            
+            # Convert the matches object to a list before sorting
+            matches_list = list(matches)
+            matches_list.sort(key=lambda x: x.distance)
 
             # Calculate the total distance of the top matches
-            top_matches = matches[:min(10, len(matches))]
+            top_matches = matches_list[:min(10, len(matches_list))]
             match_score = sum([match.distance for match in top_matches])
 
             # Update the best match

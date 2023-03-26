@@ -62,18 +62,17 @@ def reorder(points):
 
 
 def getWarp(img, largest, widthImg, heightImg):
-
     if largest.size == 0:
         return img
-#define two sets of points 
-    reorder(largest)
-    pts1=np.float32(largest)
-    pts2= np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
-    #Perspective warp the area within the bounding box of the largest image captured
-    matrix = cv2.getPerspectiveTransform(pts1,pts2)
-    imgOut= cv2.warpPerspective(img, matrix, (widthImg,heightImg))
-    #crop warp corrected image, removing 10 pixels from each side
-    imgCrop=imgOut[10:imgOut.shape[0]-10,10:imgOut.shape[1]-10]
-    #resize image to same size once more
-    imgCrop= cv2.resize(imgCrop,(widthImg,heightImg))
+
+    largest = reorder(largest)
+    pts1 = np.float32(largest)
+    pts2 = np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
+
+    matrix = cv2.getPerspectiveTransform(pts1, pts2)
+    imgOut = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
+
+    imgCrop = imgOut[10:imgOut.shape[0] - 10, 10:imgOut.shape[1] - 10]
+    imgCrop = cv2.resize(imgCrop, (widthImg, heightImg))
+
     return imgCrop

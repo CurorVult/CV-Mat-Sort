@@ -25,5 +25,5 @@ def load_preprocess_image(image_path):
     return img.numpy()
 
 # Load images
-path_to_directory = "/content/drive/MyDrive/Datasets/One_images"
+path_to_directory = "C:\\Users\\Sean\\Documents\\GitHub\\CV-Mat-Sort\\Phyrexia_ All Will Be One_images"
 image_paths = [os.path.join(path_to_directory, file) for file in os.listdir(path_to_directory) if file.endswith(('.png', '.jpg', '.jpeg'))]

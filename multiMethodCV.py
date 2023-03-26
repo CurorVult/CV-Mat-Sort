@@ -44,7 +44,8 @@ conn = connect_to_database()
 #Selection UI for Selecting Feature Matching Method
 def on_combobox_change(event):
     global feature_matching_method
-    feature_matching_method.set(combobox.get())
+    feature_matching_method = combobox.get()
+
 root = tk.Tk()
 root.title("Feature Matching Method Selection")
 
@@ -98,8 +99,6 @@ while True:
     if largest is not None and len(largest) > 0:
         cv2.drawContours(img_with_contour, [largest], -1, (0, 255, 0), 2)
     cv2.imshow("Result", img_with_contour)
-    cv2.imshow("Warped Image", img_warped)
-    
 
     # Break the loop when the start_comparison flag is set
     if start_comparison:
@@ -110,8 +109,7 @@ while True:
 
 # Compare the warped image with images in a folder
 folder_path = '\\Users\\Sean\\Documents\\GitHub\\CV-Mat-Sort\\Phyrexia_ All Will Be One_images'
-matching_image_name = altComparison.comparison_by_method(img_warped, folder_path, feature_matching_method.get())
-
+matching_image_name = altComparison.comparison_by_method(img_warped, folder_path, feature_matching_method)
 
 # Get the name from the SQL database
 with conn.cursor() as cursor:
