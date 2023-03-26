@@ -72,3 +72,6 @@ test_X1, test_X2 = np.array(test_X1), np.array(test_X2)
 test_y = np.array(test_labels)
 
 model.fit([train_X1, train_X2], train_y, validation_data=([test_X1, test_X2], test_y), batch_size=32, epochs=10)
+
+
+model.save("siam.h5")
