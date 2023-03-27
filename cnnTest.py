@@ -1,72 +1,81 @@
-import tensorflow as tf
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import os
+import numpy as np
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+import pandas as pd
+from tensorflow.keras.layers import BatchNormalization
 
-# set up data directories
-data_dir = 'path/to/data/directory'
-train_dir = os.path.join(data_dir, 'train')
-val_dir = os.path.join(data_dir, 'validation')
+def extract_class_label(file_name):
+    return os.path.splitext(file_name)[0]
 
-# create training and validation directories
-os.makedirs(train_dir, exist_ok=True)
-os.makedirs(val_dir, exist_ok=True)
+# Load your dataset
+data_dir = 'C:\\Users\\Sean\\Documents\\GitHub\\CV-Mat-Sort\\Phyrexia_ All Will Be One_images'
+image_files = [f for f in os.listdir(data_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
 
-# define augmentation parameters
-train_datagen = ImageDataGenerator(
-    rescale=1./255,
-    rotation_range=40,
-    width_shift_range=0.2,
-    height_shift_range=0.2,
-    shear_range=0.2,
-    zoom_range=0.2,
-    horizontal_flip=True,
-    fill_mode='nearest',
-    validation_split=0.3)
+# Split dataset into train and test sets
+train_files, test_files = train_test_split(image_files, test_size=0.2, random_state=42)
+unique_labels = set([extract_class_label(file_name) for file_name in train_files])
+num_classes = len(unique_labels)
+print("Number of Classes")
+print(num_classes)
 
-# set up training and validation data generators
-train_generator = train_datagen.flow_from_directory(
-    data_dir,
-    target_size=(325, 454),
-    batch_size=32,
-    class_mode='binary',
-    subset='training')
-
-validation_generator = train_datagen.flow_from_directory(
-    data_dir,
-    target_size=(325, 454),
-    batch_size=32,
-    class_mode='binary',
-    subset='validation')
-
-# define the model architecture
-model = tf.keras.Sequential([
-    tf.keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(150, 150, 3)),
-    tf.keras.layers.MaxPooling2D(2,2),
-    tf.keras.layers.Conv2D(64, (3,3), activation='relu'),
-    tf.keras.layers.MaxPooling2D(2,2),
-    tf.keras.layers.Conv2D(128, (3,3), activation='relu'),
-    tf.keras.layers.MaxPooling2D(2,2),
-    tf.keras.layers.Conv2D(128, (3,3), activation='relu'),
-    tf.keras.layers.MaxPooling2D(2,2),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dropout(0.5),
-    tf.keras.layers.Dense(512, activation='relu'),
-    tf.keras.layers.Dense(1, activation='sigmoid')
+# Create the custom CNN model
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
+    BatchNormalization(),
+    MaxPooling2D((2, 2)),
+    Conv2D(64, (3, 3), activation='relu'),
+    BatchNormalization(),
+    MaxPooling2D((2, 2)),
+    Conv2D(128, (3, 3), activation='relu'),
+    BatchNormalization(),
+    MaxPooling2D((2, 2)),
+    Flatten(),
+    Dense(64, activation='relu'),
+    Dropout(0.5),
+    Dense(num_classes, activation='softmax')
 ])
 
-# compile the model
-model.compile(loss='binary_crossentropy',
-              optimizer=tf.keras.optimizers.RMSprop(lr=1e-4),
-              metrics=['accuracy'])
+# ImageDataGenerator for data augmentation
+train_datagen = ImageDataGenerator(rescale=1./255,
+                                   rotation_range=20,
+                                   width_shift_range=0.2,
+                                   height_shift_range=0.2,
+                                   shear_range=0.2,
+                                   zoom_range=0.2,
+                                   horizontal_flip=True,
+                                   fill_mode='nearest')
 
-# train the model with augmented data
-history = model.fit(
-      train_generator,
-      steps_per_epoch=train_generator.samples/train_generator.batch_size,
-      epochs=100,
-      validation_data=validation_generator,
-      validation_steps=validation_generator.samples/validation_generator.batch_size,
-      verbose=2)
+def custom_generator(file_list, data_dir, datagen, target_size, batch_size, class_mode):
+    labels = [extract_class_label(file_name) for file_name in file_list]
+    generator = datagen.flow_from_dataframe(
+        pd.DataFrame({'filename': file_list, 'class_label': labels}),
+        directory=data_dir,
+        x_col='filename',
+        y_col='class_label',
+        target_size=target_size,
+        batch_size=batch_size,
+        class_mode=class_mode,
+        classes=list(unique_labels)
+    )
+    return generator
 
-# save the trained model
-model.save('my_model.h5')
+# Update train_generator and validation_generator
+batch_size = 32
+train_generator = custom_generator(train_files, data_dir, train_datagen, (224, 224), batch_size, 'categorical')
+validation_generator = custom_generator(test_files, data_dir, train_datagen, (224, 224), batch_size, 'categorical')
+
+
+# Compile and train the model
+model.compile(optimizer=Adam(lr=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+epochs = 30
+model.fit(train_generator,
+          epochs=epochs,
+          validation_data=validation_generator)
+
+# Save the custom CNN model
+model.save('mtgembed.h5')

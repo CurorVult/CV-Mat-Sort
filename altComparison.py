@@ -2,6 +2,15 @@
 import cv2
 import numpy as np
 import os
+import embeddingFunc
+import createEmbed
+
+#Global Variables for image embeddings
+loaded_image_embeddings = np.load('image_embeddings.npy')
+with open('image_paths.txt', 'r') as f:
+    loaded_image_paths = [line.strip() for line in f.readlines()]
+
+
 
 def comparison_by_method(img_warped, folder_path, method):
     if method == 'SIFT':
@@ -12,8 +21,10 @@ def comparison_by_method(img_warped, folder_path, method):
         return orb_comparison(img_warped, folder_path)
     elif method == 'AKAZE':
         return akaze_comparison(img_warped, folder_path)
+    elif method == 'IDENTIFY':
+        return comparison_by_identification(img_warped, folder_path)
     else:
-        raise ValueError(f"Invalid feature matching method: {method}")
+        raise ValueError(f"Invalid method: {method}")
 
 def sift_comparison(img_query, folder_path):
     # Initialize SIFT
@@ -165,3 +176,35 @@ def akaze_comparison(img_query, folder_path):
                 best_match_score = match_score
 
     return os.path.splitext(best_match)[0], kp_query, des_query
+
+
+def identify_image(query_image_path, image_embeddings, threshold=0.5):
+    query_image = embeddingFunc.load_preprocess_image(query_image_path)
+    query_embedding = embeddingFunc.embedding_function(np.expand_dims(query_image, axis=0))
+
+    distances = np.linalg.norm(image_embeddings - query_embedding, axis=1)
+    closest_index = np.argmin(distances)
+
+    if distances[closest_index] < threshold:
+        return loaded_image_paths[closest_index], distances[closest_index]
+    else:
+        return None, None
+
+def comparison_by_identification(img_warped, folder_path):
+    # Save the warped image as a temporary file
+    temp_image_path = os.path.join(folder_path, 'temp_image.jpg')
+    cv2.imwrite(temp_image_path, img_warped)
+
+    # Call the identify_image function with the temporary image path
+    identified_image, distance = identify_image(temp_image_path, loaded_image_embeddings)
+
+    # Remove the temporary image file
+    os.remove(temp_image_path)
+
+    
+    if identified_image:
+        # Extract the image name (ID) from the identified image path
+        image_name = os.path.splitext(os.path.basename(identified_image))[0]
+        return image_name, None, None
+    else:
+        return None, None, None

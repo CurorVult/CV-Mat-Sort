@@ -73,6 +73,6 @@ def getWarp(img, largest, widthImg, heightImg):
     imgOut = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
 
     imgCrop = imgOut[10:imgOut.shape[0] - 10, 10:imgOut.shape[1] - 10]
-    imgCrop = cv2.resize(imgCrop, (widthImg, heightImg))
+    imgCrop = cv2.resize(imgCrop, (488, 680))
 
     return imgCrop

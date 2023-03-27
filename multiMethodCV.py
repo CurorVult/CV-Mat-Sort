@@ -29,8 +29,8 @@ conn = connect_to_database()
 
 print("Starting webcam...")
 capture = cv2.VideoCapture(1)
-widthImg = 640
-heightImg = 480
+widthImg = 800
+heightImg = 600
 
 capture.set(10, 130)
 IPKernel = np.ones((5,5))
@@ -52,7 +52,7 @@ frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 label = ttk.Label(frame, text="Select feature matching method:")
 label.grid(row=0, column=0, sticky=tk.W)
 
-feature_matching_methods = ['SIFT', 'BRISK', 'ORB', 'AKAZE']
+feature_matching_methods = ['SIFT', 'BRISK', 'ORB', 'AKAZE', 'IDENTIFY']
 feature_matching_method = tk.StringVar()
 combobox = ttk.Combobox(frame, textvariable=feature_matching_method)
 combobox['values'] = feature_matching_methods
@@ -97,7 +97,7 @@ def perform_comparison():
     start_comparison_button.config(state=tk.NORMAL)
 
 
-    
+
 def visualize_features(image, keypoints):
     img_with_keypoints = cv2.drawKeypoints(image, keypoints, None, color=(0, 255, 0), flags=cv2.DrawMatchesFlags_DRAW_RICH_KEYPOINTS)
     cv2.imshow("Input Image with Features", img_with_keypoints)
@@ -128,8 +128,8 @@ while True:
         folder_path = '\\Users\\Sean\\Documents\\GitHub\\CV-Mat-Sort\\Phyrexia_ All Will Be One_images'
         matching_image_name, img_warped_keypoints, img_warped_descriptors = altComparison.comparison_by_method(img_warped, folder_path, feature_matching_method.get())
 
-        # Visualize the features found on the input image
-        visualize_features(img_warped, img_warped_keypoints)
+        if img_warped_keypoints is not None:
+            visualize_features(img_warped, img_warped_keypoints)
 
         with conn.cursor() as cursor:
             cursor.execute(f"SELECT name FROM cards WHERE id = '{matching_image_name}'")
