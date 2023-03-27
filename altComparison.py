@@ -6,8 +6,8 @@ import os
 def comparison_by_method(img_warped, folder_path, method):
     if method == 'SIFT':
         return sift_comparison(img_warped, folder_path)
-    elif method == 'SURF':
-        return surf_comparison(img_warped, folder_path)
+    elif method == 'BRISK':
+        return brisk_comparison(img_warped, folder_path)
     elif method == 'ORB':
         return orb_comparison(img_warped, folder_path)
     elif method == 'AKAZE':
@@ -88,18 +88,16 @@ def orb_comparison(img_warped, folder_path):
 
 
 
-def surf_comparison(img_query, folder_path):
-    # Initialize SURF
-    surf = cv2.xfeatures2d.SURF_create()
+def brisk_comparison(img_query, folder_path):
+    # Initialize BRISK
+    brisk = cv2.BRISK_create()
 
     # Find keypoints and descriptors for the query image
-    kp_query, des_query = surf.detectAndCompute(img_query, None)
+    kp_query, des_query = brisk.detectAndCompute(img_query, None)
 
     # Initialize BFMatcher
-    bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
-    # The rest of the function is the same as the sift_comparison function
-    # ...
     best_match = None
     best_match_score = float('inf')
 
@@ -109,14 +107,17 @@ def surf_comparison(img_query, folder_path):
             img_train = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
             # Find keypoints and descriptors for the train image
-            kp_train, des_train = surf.detectAndCompute(img_train, None)
+            kp_train, des_train = brisk.detectAndCompute(img_train, None)
 
             # Match keypoints
             matches = bf.match(des_query, des_train)
-            matches.sort(key=lambda x: x.distance)
+            
+            # Convert the matches object to a list before sorting
+            matches_list = list(matches)
+            matches_list.sort(key=lambda x: x.distance)
 
             # Calculate the total distance of the top matches
-            top_matches = matches[:min(10, len(matches))]
+            top_matches = matches_list[:min(10, len(matches_list))]
             match_score = sum([match.distance for match in top_matches])
 
             # Update the best match
@@ -128,7 +129,7 @@ def surf_comparison(img_query, folder_path):
 
 def akaze_comparison(img_query, folder_path):
     # Initialize AKAZE
-    akaze = cv2.AKAZE_create()
+    akaze = cv2.AKAZE_create(threshold=0.002)
 
     # Find keypoints and descriptors for the query image
     kp_query, des_query = akaze.detectAndCompute(img_query, None)
@@ -163,4 +164,4 @@ def akaze_comparison(img_query, folder_path):
                 best_match = file
                 best_match_score = match_score
 
-    return os.path.splitext(best_match)[0]
+    return os.path.splitext(best_match)[0], kp_query, des_query

@@ -7,20 +7,6 @@ import pymysql
 import tkinter as tk
 from tkinter import ttk
 
-capture = cv2.VideoCapture(1)
-# Get the actual frame dimensions of the webcam
-widthImg = 640
-heightImg = 480
-
-# Set Camera Parameters
-capture.set(10, 130)
-#Define Kernal for Image Processing Passes
-IPKernel = np.ones((5,5))
-
-# Use the calculated frame dimensions
-capture.set(3, widthImg)
-capture.set(4, heightImg)
-
 def connect_to_database():
     config = {
         'host': 'localhost',
@@ -41,6 +27,25 @@ def connect_to_database():
 # Connect to the database
 conn = connect_to_database()
 
+
+print("Starting webcam...")
+capture = cv2.VideoCapture(1)
+# Get the actual frame dimensions of the webcam
+widthImg = 800
+heightImg = 600
+
+# Set Camera Parameters
+capture.set(10, 130)
+#Define Kernal for Image Processing Passes
+IPKernel = np.ones((5,5))
+
+# Use the calculated frame dimensions
+capture.set(3, widthImg)
+capture.set(4, heightImg)
+# Set the frame rate to 30 FPS
+#capture.set(cv2.CAP_PROP_FPS, 30)
+
+print("Setting up UI...")
 #Selection UI for Selecting Feature Matching Method
 def on_combobox_change(event):
     global feature_matching_method
@@ -54,7 +59,7 @@ frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 label = ttk.Label(frame, text="Select feature matching method:")
 label.grid(row=0, column=0, sticky=tk.W)
 
-feature_matching_methods = ['SIFT', 'SURF', 'ORB', 'AKAZE']
+feature_matching_methods = ['SIFT', 'BRISK', 'ORB', 'AKAZE']
 feature_matching_method = tk.StringVar()
 combobox = ttk.Combobox(frame, textvariable=feature_matching_method)
 combobox['values'] = feature_matching_methods
