@@ -17,4 +17,4 @@ def create_embeddings(directory_path):
             f.write(image_path + '\n')
 
 
-create_embeddings('C:\\Users\\Sean\Documents\\GitHub\\CV-Mat-Sort\\Phyrexia_ All Will Be One_images')
+#create_embeddings('C:\\Users\\Sean\Documents\\GitHub\\CV-Mat-Sort\\Phyrexia_ All Will Be One_images')

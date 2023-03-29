@@ -52,7 +52,7 @@ frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 label = ttk.Label(frame, text="Select feature matching method:")
 label.grid(row=0, column=0, sticky=tk.W)
 
-feature_matching_methods = ['SIFT', 'BRISK', 'ORB', 'AKAZE', 'IDENTIFY']
+feature_matching_methods = ['SIFT', 'BRISK', 'ORB', 'AKAZE', 'EMBEDDING']
 feature_matching_method = tk.StringVar()
 combobox = ttk.Combobox(frame, textvariable=feature_matching_method)
 combobox['values'] = feature_matching_methods
@@ -103,6 +103,8 @@ def visualize_features(image, keypoints):
     cv2.imshow("Input Image with Features", img_with_keypoints)
 
 
+
+
 while True:
     root.update_idletasks()
     root.update()
@@ -126,9 +128,10 @@ while True:
         start_comparison = False
 
         folder_path = '\\Users\\Sean\\Documents\\GitHub\\CV-Mat-Sort\\Phyrexia_ All Will Be One_images'
+
         matching_image_name, img_warped_keypoints, img_warped_descriptors = altComparison.comparison_by_method(img_warped, folder_path, feature_matching_method.get())
 
-        if img_warped_keypoints is not None:
+        if feature_matching_method.get() != 'EMBEDDING' and img_warped_keypoints is not None:
             visualize_features(img_warped, img_warped_keypoints)
 
         with conn.cursor() as cursor:
@@ -146,6 +149,7 @@ while True:
     # Exit the loop when the 'q' key is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
 
 # Close the database connection
 conn.close()
