@@ -28,6 +28,28 @@ def create_triplets(images, labels, num_triplets=1000):
 
     return anchor_images, positive_images, negative_images
 
+def augment_images(image_path, num_augmented_images=1):
+    datagen = ImageDataGenerator(
+        rotation_range=10,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        shear_range=0.1,
+        zoom_range=0.1,
+         horizontal_flip=True,
+        fill_mode='nearest'
+    )
+
+    image = img_to_array(load_img(image_path, target_size=(224, 224))) / 255.0
+    image = image.reshape((1,) + image.shape)
+
+    augmented_images = []
+    for _ in range(num_augmented_images):
+        for batch in datagen.flow(image, batch_size=1):
+            augmented_images.append(batch[0])
+            break
+
+    return augmented_images
+
 # Load images
 path_to_directory = "/content/drive/MyDrive/Datasets/One_images"
 image_paths = [os.path.join(path_to_directory, file) for file in os.listdir(path_to_directory) if file.endswith(('.png', '.jpg', '.jpeg'))]
@@ -35,6 +57,7 @@ image_paths = [os.path.join(path_to_directory, file) for file in os.listdir(path
 # Create a list of images and their corresponding class labels
 images = []
 labels = []
+num_augmented_images = 4
 for image_path in image_paths:
     augmented_images = augment_images(image_path, num_augmented_images=num_augmented_images)
     class_name = os.path.basename(image_path).split('_')[0]  # Extract class name from the image path

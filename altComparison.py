@@ -61,7 +61,7 @@ def sift_comparison(img_query, folder_path):
                 best_match = file
                 best_match_score = match_score
 
-    return os.path.splitext(best_match)[0]
+    return os.path.splitext(best_match)[0],None,None
 
 
 def orb_comparison(img_warped, folder_path):
@@ -92,7 +92,7 @@ def orb_comparison(img_warped, folder_path):
                 max_matches = len(matches_list)
                 matching_image = filename
                 
-    return matching_image
+    return matching_image,None,None
     
 
 
@@ -136,7 +136,7 @@ def brisk_comparison(img_query, folder_path):
                 best_match = file
                 best_match_score = match_score
 
-    return os.path.splitext(best_match)[0]
+    return os.path.splitext(best_match)[0],None,None
 
 def akaze_comparison(img_query, folder_path):
     # Initialize AKAZE
