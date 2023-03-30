@@ -3,6 +3,7 @@ import random
 import os
 import numpy as np
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
+import cv2
 
 def create_triplets(images, labels, num_triplets=1000):
     anchor_images, positive_images, negative_images = [], [], []
@@ -14,28 +15,34 @@ def create_triplets(images, labels, num_triplets=1000):
             class_to_images[label] = []
         class_to_images[label].append(img)
 
+    # Filter out classes with less than 2 images
+    valid_classes = [cls for cls in class_to_images.keys() if len(class_to_images[cls]) >= 2]
+    if not valid_classes:
+        raise ValueError("Not enough images per class for triplet generation. Please add more images or augment the dataset.")
+
     for _ in range(num_triplets):
         # Select a random class for the anchor and positive images
-        anchor_class = random.choice(list(class_to_images.keys()))
+        anchor_class = random.choice(valid_classes)
         anchor_image, positive_image = random.sample(class_to_images[anchor_class], 2)
         anchor_images.append(anchor_image)
         positive_images.append(positive_image)
 
         # Select a random class for the negative image, making sure it's different from the anchor_class
-        negative_class = random.choice([cls for cls in class_to_images.keys() if cls != anchor_class])
+        negative_class = random.choice([cls for cls in valid_classes if cls != anchor_class])
         negative_image = random.choice(class_to_images[negative_class])
         negative_images.append(negative_image)
 
     return anchor_images, positive_images, negative_images
 
-def augment_images(image_path, num_augmented_images=1):
+
+def augment_images(image_path, num_augmented_images=1, apply_blur=True):
     datagen = ImageDataGenerator(
         rotation_range=10,
         width_shift_range=0.1,
         height_shift_range=0.1,
         shear_range=0.1,
         zoom_range=0.1,
-         horizontal_flip=True,
+        horizontal_flip=True,
         fill_mode='nearest'
     )
 
@@ -45,7 +52,15 @@ def augment_images(image_path, num_augmented_images=1):
     augmented_images = []
     for _ in range(num_augmented_images):
         for batch in datagen.flow(image, batch_size=1):
-            augmented_images.append(batch[0])
+            aug_image = batch[0]
+
+            # Apply Gaussian blur
+            if apply_blur:
+                ksize = random.choice([3, 5])  # Choose a random kernel size
+                sigma = random.uniform(0.1, 2.0)  # Choose a random sigma value
+                aug_image = cv2.GaussianBlur(aug_image, (ksize, ksize), sigma)
+
+            augmented_images.append(aug_image)
             break
 
     return augmented_images
