@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import os
 import embeddingFunc
+import hashlib
 # from createEmbed import image_paths
 
 
@@ -12,7 +13,7 @@ loaded_image_paths =embeddingFunc.image_paths
 
 
 
-def comparison_by_method(img_warped, folder_path, method,):
+def comparison_by_method(img_warped, folder_path, method, conn=None):
     if method == 'SIFT':
         return sift_comparison(img_warped, folder_path)
     elif method == 'BRISK':
@@ -23,6 +24,8 @@ def comparison_by_method(img_warped, folder_path, method,):
         return akaze_comparison(img_warped, folder_path)
     elif method == 'EMBEDDING':
         return comparison_by_embedding(img_warped)
+    elif method == 'AKAZEDB':
+        return  akaze_comparison_db(img_warped, conn)
     else:
         raise ValueError(f"Invalid method: {method}")
 
@@ -196,4 +199,52 @@ def comparison_by_embedding(img_warped):
     matched_image_filename = os.path.splitext(os.path.basename(matched_image_path))[0]
     return matched_image_filename, None, None
 
-#
+def akaze_comparison_db(img_query, conn):
+    # Initialize AKAZE
+    akaze = cv2.AKAZE_create(threshold=0.002)
+
+    # Find keypoints and descriptors for the query image
+    kp_query, des_query = akaze.detectAndCompute(img_query, None)
+
+    # Convert the query image descriptors to a string representation
+    des_query_str = ','.join(map(str, des_query.flatten()))
+
+    # Compute the SHA-256 hash of the query image descriptors
+    query_hash = hashlib.sha256(des_query_str.encode()).hexdigest()
+    print(f"Query image hash: {query_hash}")
+
+    # Initialize BFMatcher
+    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+
+    best_match = None
+    best_match_score = float('inf')
+
+    # Fetch stored AKAZE features from the database
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, akaze FROM cards WHERE akaze_hash = %s", (query_hash,))
+    rows = cursor.fetchall()
+
+    for row in rows:
+        image_id, akaze_features_str = row
+
+        if akaze_features_str is not None:
+            # Convert the string representation of AKAZE features back to a NumPy array
+            akaze_features = np.fromstring(akaze_features_str, sep=',').astype(np.uint8).reshape(-1, 61)
+
+            # Match keypoints
+            matches = bf.match(des_query, akaze_features)
+
+            # Convert the matches object to a list before sorting
+            matches_list = list(matches)
+            matches_list.sort(key=lambda x: x.distance)
+
+            # Calculate the total distance of the top matches
+            top_matches = matches_list[:min(10, len(matches_list))]
+            match_score = sum([match.distance for match in top_matches])
+
+            # Update the best match
+            if match_score < best_match_score:
+                best_match = image_id
+                best_match_score = match_score
+
+    return best_match, kp_query, des_query

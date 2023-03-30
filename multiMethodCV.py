@@ -52,7 +52,7 @@ frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 label = ttk.Label(frame, text="Select feature matching method:")
 label.grid(row=0, column=0, sticky=tk.W)
 
-feature_matching_methods = ['SIFT', 'BRISK', 'ORB', 'AKAZE', 'EMBEDDING']
+feature_matching_methods = ['SIFT', 'BRISK', 'ORB', 'AKAZE', 'EMBEDDING', 'AKAZEDB']
 feature_matching_method = tk.StringVar()
 combobox = ttk.Combobox(frame, textvariable=feature_matching_method)
 combobox['values'] = feature_matching_methods
@@ -129,7 +129,7 @@ while True:
 
         folder_path = '\\Users\\Sean\\Documents\\GitHub\\CV-Mat-Sort\\Phyrexia_ All Will Be One_images'
 
-        matching_image_name, img_warped_keypoints, img_warped_descriptors = altComparison.comparison_by_method(img_warped, folder_path, feature_matching_method.get())
+        matching_image_name, img_warped_keypoints, img_warped_descriptors = altComparison.comparison_by_method(img_warped, folder_path, feature_matching_method.get(), conn)
 
         if feature_matching_method.get() != 'EMBEDDING' and img_warped_keypoints is not None:
             visualize_features(img_warped, img_warped_keypoints)
