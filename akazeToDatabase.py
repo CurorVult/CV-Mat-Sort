@@ -45,15 +45,15 @@ def extract_akaze_features_and_hash(image_path):
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     akaze = cv2.AKAZE_create()
     _, descriptors = akaze.detectAndCompute(image, None)
-    img_hash = calculate_image_hash(image_path)
+    img_hash = calculate_image_hash(descriptors)
 
     return descriptors, img_hash
 
 # Calculate image hash
-def calculate_image_hash(image_path):
-    with Image.open(image_path) as img:
-        img_hash = imagehash.phash(img)
-    return str(img_hash)
+def calculate_image_hash(descriptors):
+    features_str = ",".join(map(str, descriptors.flatten()))
+    img_hash = hash(features_str)
+    return img_hash
 
 # Main function
 def main():

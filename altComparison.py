@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 import os
 import embeddingFunc
-import hashlib
 # from createEmbed import image_paths
 
 
@@ -206,13 +205,6 @@ def akaze_comparison_db(img_query, conn):
     # Find keypoints and descriptors for the query image
     kp_query, des_query = akaze.detectAndCompute(img_query, None)
 
-    # Convert the query image descriptors to a string representation
-    des_query_str = ','.join(map(str, des_query.flatten()))
-
-    # Compute the SHA-256 hash of the query image descriptors
-    query_hash = hashlib.sha256(des_query_str.encode()).hexdigest()
-    print(f"Query image hash: {query_hash}")
-
     # Initialize BFMatcher
     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
@@ -221,7 +213,7 @@ def akaze_comparison_db(img_query, conn):
 
     # Fetch stored AKAZE features from the database
     cursor = conn.cursor()
-    cursor.execute("SELECT id, akaze FROM cards WHERE akaze_hash = %s", (query_hash,))
+    cursor.execute("SELECT id, akaze FROM cards")
     rows = cursor.fetchall()
 
     for row in rows:
