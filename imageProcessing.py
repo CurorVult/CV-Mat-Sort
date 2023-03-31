@@ -6,18 +6,18 @@ IPKernel = np.ones((5,5))
 
 
 def imageProcessing(img):
-    #while we will need a colour image later on, for now we convert to greyscale to reduce extrenious data when identifying the card itself
+    #Convert Image to Greyscale
     imgGrey = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     # Increase contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     imgGrey = clahe.apply(imgGrey)
-    #To further reduce noise, we use gaussian blur to reduce hard edges, we use a 5 by 5 kernel
+    #Gaussian Blur filter to reduce noise
     imgBlur = cv2.GaussianBlur(imgGrey, (5,5),1)
-    #Next we pick out the edges using Canny Edge detector 
+    #Find Edges with Canny Edge detection
     imgCanny = cv2.Canny(imgBlur,200,200)
-    #We thicken the edges using the dilation function, we do not need to trace fine detailed shapes. We want to find the rectangular bounds of the card
-    #We make 2 passes of dilation to create very thick lines, then cut them back with one pass of erosion. This method was reccomended by Murtaza's Workshop
+    #Thicken the edges using the dilation function
     imgDial=cv2.dilate(imgCanny,IPKernel,iterations=2)
+    #Thin edges with one pass of erosion. This method was reccomended by Murtaza's Workshop
     imgErode= cv2.erode(imgDial,IPKernel, iterations=1)
     return imgErode
 
@@ -33,7 +33,7 @@ def getContours(img):
             #Determine the shape of each contour
             peri = cv2.arcLength(cnt,True)
             aprx = cv2.approxPolyDP(cnt,0.02*peri,True)
-            #Here we find the contour with the largest area by looping over every bound area with 4 sides in the frame
+            #Find the contour with the largest area by looping over every bound area with 4 sides in the frame
             if area > maxArea and len(aprx)==4:
                 largest=aprx
                 maxArea=area
@@ -45,12 +45,12 @@ def reorder(points):
     #This function reorders the array of points to ensure that proper bounding boxes are created
     points= points.reshape((4,2))
     newPoints=np.zeros((4,1,2),np.int32)
-    #sum points along first axis
+    #Sum points along first axis
     add = points.sum(1)
-    #assign smallest point as the top left corner and the largest as bottom right.
+    #Assign smallest point as the top left corner and the largest as bottom right.
     newPoints[0]=points[np.argmin(add)]
     newPoints[3]=points[np.argmax(add)]
-    #assign the difference between the two middle points as the bottom left and top right
+    #Assign the difference between the two middle points as the bottom left and top right
     diff=np.diff(points,axis=1)
     newPoints[1]=points[np.argmin(diff)]
     newPoints[2]=points[np.argmax(diff)]
@@ -66,12 +66,16 @@ def getWarp(img, largest, widthImg, heightImg):
         return img
 
     largest = reorder(largest)
+
+    #Assign first set of points
     pts1 = np.float32(largest)
+    #Assign second set of points based on passed parameters
     pts2 = np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
 
+    #Obtain perspective transformation matrix and use to warp perspective
     matrix = cv2.getPerspectiveTransform(pts1, pts2)
     imgOut = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
-
+    #Correct image but cutting out extranious black areas
     imgCrop = imgOut[10:imgOut.shape[0] - 10, 10:imgOut.shape[1] - 10]
     imgCrop = cv2.resize(imgCrop, (488, 680))
 

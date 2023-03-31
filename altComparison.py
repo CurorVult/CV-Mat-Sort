@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import os
 import embeddingFunc
-# from createEmbed import image_paths
+
 
 
 #Global Variables for image embeddings

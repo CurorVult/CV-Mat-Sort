@@ -3,7 +3,6 @@ import os
 import numpy as np
 import pymysql
 from PIL import Image
-import imagehash
 
 # Connect to MySQL database
 def connect_to_database():

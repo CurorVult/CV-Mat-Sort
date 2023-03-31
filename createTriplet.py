@@ -8,7 +8,7 @@ import cv2
 def create_triplets(images, labels, num_triplets=1000):
     anchor_images, positive_images, negative_images = [], [], []
 
-    # Create a dictionary to map card classes to their respective images
+    # Create a dictionary to map card classes to their respective images.
     class_to_images = {}
     for img, label in zip(images, labels):
         if label not in class_to_images:
@@ -34,8 +34,7 @@ def create_triplets(images, labels, num_triplets=1000):
 
     return anchor_images, positive_images, negative_images
 
-
-def augment_images(image_path, num_augmented_images=1, apply_blur=True):
+def augment_images(image_path, num_augmented_images=1):
     datagen = ImageDataGenerator(
         rotation_range=10,
         width_shift_range=0.1,
@@ -43,9 +42,11 @@ def augment_images(image_path, num_augmented_images=1, apply_blur=True):
         shear_range=0.1,
         zoom_range=0.1,
         horizontal_flip=True,
+        brightness_range=(0.8, 1.2),
         fill_mode='nearest'
     )
 
+    # Load images into array and normalize
     image = img_to_array(load_img(image_path, target_size=(224, 224))) / 255.0
     image = image.reshape((1,) + image.shape)
 
@@ -53,19 +54,13 @@ def augment_images(image_path, num_augmented_images=1, apply_blur=True):
     for _ in range(num_augmented_images):
         for batch in datagen.flow(image, batch_size=1):
             aug_image = batch[0]
-
-            # Apply Gaussian blur
-            if apply_blur:
-                ksize = random.choice([3, 5])  # Choose a random kernel size
-                sigma = random.uniform(0.1, 2.0)  # Choose a random sigma value
-                aug_image = cv2.GaussianBlur(aug_image, (ksize, ksize), sigma)
-
             augmented_images.append(aug_image)
             break
 
     return augmented_images
 
-# Load images
+
+# Load images from Directory
 path_to_directory = "/content/drive/MyDrive/Datasets/One_images"
 image_paths = [os.path.join(path_to_directory, file) for file in os.listdir(path_to_directory) if file.endswith(('.png', '.jpg', '.jpeg'))]
 

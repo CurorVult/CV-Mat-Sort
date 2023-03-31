@@ -23,9 +23,10 @@ def generate_embeddings(image_folder, embedding_model):
 
 # Load the trained Siamese model
 siamese_triplet_model = tf.keras.models.load_model("triplet_siam.h5", compile=False)
-
+siamese_triplet_model.summary()
 # Extract the embedding model from the Siamese model
 embedding_model = siamese_triplet_model.layers[3]
+
 
 # Set the path of your dataset folder
 image_folder = 'C:\\Users\\Sean\\Documents\\GitHub\\CV-Mat-Sort\\Phyrexia_ All Will Be One_images'

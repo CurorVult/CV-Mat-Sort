@@ -1,34 +1,41 @@
 import os
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Model, model_from_json
+from tensorflow.keras.layers import Conv2D, Dense, Flatten, Input
+from tensorflow.keras.models import Model
+from tensorflow.keras.models import load_model
+
+def triplet_loss(y_true, y_pred, alpha=0.2):
+    anchor, positive, negative = y_pred[:, 0], y_pred[:, 1], y_pred[:, 2]
+    pos_dist = tf.reduce_sum(tf.square(anchor - positive), axis=-1)
+    neg_dist = tf.reduce_sum(tf.square(anchor - negative), axis=-1)
+    loss = tf.maximum(pos_dist - neg_dist + alpha, 0.0)
+    return tf.reduce_mean(loss)
 
 def load_image_paths_from_file(file_path):
     with open(file_path, 'r') as file:
         image_paths = [line.strip() for line in file.readlines()]
     return image_paths
 
-# Load the new_embedding_model
-# Load the JSON architecture file
-with open('new_embedding_model_architecture.json', 'r') as json_file:
-    new_embedding_model_json = json_file.read()
 
-# Create the model from the JSON string
-new_embedding_model = model_from_json(new_embedding_model_json)
-
-# Load the weights from the .h5 file
-new_embedding_model.load_weights('new_embedding_model_weights.h5')
-
+# Load the pre-trained Siamese model
+siamese_model_path = 'C:\\Users\\Sean\\Documents\\GitHub\\CV-Mat-Sort\\triplet_siam.h5'
+siamese_model = load_model(siamese_model_path, custom_objects={'triplet_loss': triplet_loss})
 image_embeddings_path = 'image_embeddings.npy'
 image_embeddings = np.load(image_embeddings_path)
 image_paths_file = 'image_paths.txt'
 image_paths = load_image_paths_from_file(image_paths_file)
 
-# Use new_embedding_model for the embedding_function
+# Get the embedding model from the Siamese model
+embedding_model = Model(inputs=siamese_model.get_layer('model').input, outputs=siamese_model.get_layer('model').get_layer('dense_1').output)
+
+
+
+
 def embedding_function(image):
     image = np.expand_dims(image, axis=0)
-    new_embedding_model.summary()  
-    embedding = new_embedding_model.predict(image)
+    embedding_model.summary()  
+    embedding = embedding_model.predict(image)
     return embedding[0]
 
 def preprocess_image(img):
