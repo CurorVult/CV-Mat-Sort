@@ -10,15 +10,11 @@ from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras.applications.efficientnet import preprocess_input
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
-from tensorflow.keras.optimizers.schedules import ExponentialDecay
 from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
 from tensorflow.keras import regularizers
 from tensorflow.keras.callbacks import EarlyStopping
 import gc
-import kerastuner as kt
 import cv2
-import createTriplet
 from createTriplet import augment_images, create_triplets
 import optuna
 
