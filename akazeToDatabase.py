@@ -57,7 +57,7 @@ def calculate_image_hash(descriptors):
 
 # Main function
 def main():
-    folder_path = "\\Users\\Sean\\Documents\\GitHub\\CV-Mat-Sort\\Phyrexia_ All Will Be One_images"
+    folder_path = "C:\\Users\\Sean\\Documents\\GitHub\\card_images"
 
     # Process images
     for filename in os.listdir(folder_path):
