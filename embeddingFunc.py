@@ -27,7 +27,9 @@ image_paths_file = 'image_paths.txt'
 image_paths = load_image_paths_from_file(image_paths_file)
 
 # Get the embedding model from the Siamese model
-embedding_model = Model(inputs=siamese_model.get_layer('model').input, outputs=siamese_model.get_layer('model').get_layer('dense_1').output)
+sub_model = siamese_model.get_layer('model_14')
+dense_layers = [layer for layer in sub_model.layers if type(layer) is Dense]
+embedding_model = Model(inputs=sub_model.input, outputs=dense_layers[-1].output)
 
 
 

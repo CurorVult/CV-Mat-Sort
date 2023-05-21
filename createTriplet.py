@@ -47,7 +47,7 @@ def augment_images(image_path, num_augmented_images=1):
     )
 
     # Load images into array and normalize
-    image = img_to_array(load_img(image_path, target_size=(224, 224))) / 255.0
+    image = img_to_array(load_img(image_path, target_size=(224, 224)))
     image = image.reshape((1,) + image.shape)
 
     augmented_images = []
